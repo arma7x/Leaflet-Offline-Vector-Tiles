@@ -5,6 +5,7 @@
 <script src="/leaflet-src.min.js"></script>
 
 <script src="/sql.js"></script>
+<script src="/rbush.js"></script>
 <script src="/Leaflet.VectorGrid.js"></script>
 <script src="/Leaflet.LayerGroup.Collision.js"></script>
 <script src="/pbf.js"></script>
@@ -28,211 +29,225 @@
 
 	const map = new L.Map('map').fitWorld();
 
-		const vectorTileStyling = {
-			water: {
-				fill: true,
-				weight: 1,
-				fillColor: '#06cccc',
-				color: '#06cccc',
-				fillOpacity: 0.2,
-				opacity: 0.4,
-			},
-			admin: {
-				weight: 1,
-				fillColor: 'pink',
-				color: 'pink',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			waterway: {
-				weight: 1,
-				fillColor: '#2375e0',
-				color: '#2375e0',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			landcover: {
-				fill: true,
-				weight: 1,
-				fillColor: '#53e033',
-				color: '#53e033',
-				fillOpacity: 0.2,
-				opacity: 0.4,
-			},
-			landuse: {
-				fill: true,
-				weight: 1,
-				fillColor: '#e5b404',
-				color: '#e5b404',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			park: {
-				fill: true,
-				weight: 1,
-				fillColor: '#236C06',
-				color: '#236C06',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			boundary: {
-				weight: 1,
-				fillColor: '#9C42A6',
-				color: '#9C42A6',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			aeroway: {
-				weight: 1,
-				fillColor: '#51aeb5',
-				color: '#51aeb5',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			road: {	// mapbox & nextzen only
-				weight: 1,
-				fillColor: 'black',
-				color: 'black',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			tunnel: {	// mapbox only
-				weight: 0.5,
-				fillColor: 'black',
-				color: 'black',
-				fillOpacity: 0.2,
-				opacity: 0.4,
-				dashArray: [4, 4]
-			},
-			bridge: {	// mapbox only
-				weight: 0.5,
-				fillColor: 'black',
-				color: 'black',
-				fillOpacity: 0.2,
-				opacity: 0.4,
-				dashArray: [4, 4]
-			},
-			transportation: {	// openmaptiles only
-				weight: 1,
-				fillColor: 'black',
-				color: 'black',
-				fillOpacity: 0.2,
-				opacity: 0.4,
-				dashArray: [4, 4]
-			},
-			transit: {	// nextzen only
-				weight: 0.5,
-				fillColor: 'black',
-				color: 'black',
-				fillOpacity: 0.2,
-				opacity: 0.4,
-				dashArray: [4, 4]
-			},
-			building: {
-				fill: true,
-				weight: 1,
-				fillColor: '#2b2b2b',
-				color: '#2b2b2b',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			water_name: {
-				weight: 1,
-				fillColor: '#022c5b',
-				color: '#022c5b',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			transportation_name: {
-				weight: 1,
-				fillColor: '#bc6b38',
-				color: '#bc6b38',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			place: {
-				weight: 1,
-				fillColor: '#f20e93',
-				color: '#f20e93',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			housenumber: {
-				weight: 1,
-				fillColor: '#ef4c8b',
-				color: '#ef4c8b',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			poi: {
-				weight: 1,
-				fillColor: '#3bb50a',
-				color: '#3bb50a',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			earth: {	// nextzen only
-				fill: true,
-				weight: 1,
-				fillColor: '#c0c0c0',
-				color: '#c0c0c0',
-				fillOpacity: 0.2,
-				opacity: 0.4
-			},
-			point: {
-				color: 'transparent',
-			},
+	const collisionLayer = L.LayerGroup.collision({margin:5});
+	collisionLayer.addTo(map);
 
-			// Do not symbolize some stuff for mapbox
-			country_label: [],
-			marine_label: [],
-			state_label: [],
-			place_label: [],
-			waterway_label: [],
-			poi_label: [],
-			road_label: [],
-			housenum_label: [],
+	const vectorTileStyling = {
+		water: {
+			fill: true,
+			weight: 1,
+			fillColor: '#06cccc',
+			color: '#06cccc',
+			fillOpacity: 0.2,
+			opacity: 0.4,
+		},
+		admin: {
+			weight: 1,
+			fillColor: 'pink',
+			color: 'pink',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		waterway: {
+			weight: 1,
+			fillColor: '#2375e0',
+			color: '#2375e0',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		landcover: {
+			fill: true,
+			weight: 1,
+			fillColor: '#53e033',
+			color: '#53e033',
+			fillOpacity: 0.2,
+			opacity: 0.4,
+		},
+		landuse: {
+			fill: true,
+			weight: 1,
+			fillColor: '#e5b404',
+			color: '#e5b404',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		park: {
+			fill: true,
+			weight: 1,
+			fillColor: '#236C06',
+			color: '#236C06',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		boundary: {
+			weight: 1,
+			fillColor: '#9C42A6',
+			color: '#9C42A6',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		aeroway: {
+			weight: 1,
+			fillColor: '#51aeb5',
+			color: '#51aeb5',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		road: {	// mapbox & nextzen only
+			weight: 1,
+			fillColor: 'black',
+			color: 'black',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		tunnel: {	// mapbox only
+			weight: 0.5,
+			fillColor: 'black',
+			color: 'black',
+			fillOpacity: 0.2,
+			opacity: 0.4,
+			dashArray: [4, 4]
+		},
+		bridge: {	// mapbox only
+			weight: 0.5,
+			fillColor: 'black',
+			color: 'black',
+			fillOpacity: 0.2,
+			opacity: 0.4,
+			dashArray: [4, 4]
+		},
+		transportation: {	// openmaptiles only
+			weight: 1,
+			fillColor: 'black',
+			color: 'black',
+			fillOpacity: 0.2,
+			opacity: 0.4,
+			dashArray: [4, 4]
+		},
+		transit: {	// nextzen only
+			weight: 0.5,
+			fillColor: 'black',
+			color: 'black',
+			fillOpacity: 0.2,
+			opacity: 0.4,
+			dashArray: [4, 4]
+		},
+		building: {
+			fill: true,
+			weight: 1,
+			fillColor: '#2b2b2b',
+			color: '#2b2b2b',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		water_name: {
+			weight: 1,
+			fillColor: '#022c5b',
+			color: '#022c5b',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		transportation_name: {
+			weight: 1,
+			fillColor: '#bc6b38',
+			color: '#bc6b38',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		place: {
+			weight: 1,
+			fillColor: '#f20e93',
+			color: '#f20e93',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		housenumber: {
+			weight: 1,
+			fillColor: '#ef4c8b',
+			color: '#ef4c8b',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		poi: {
+			weight: 1,
+			fillColor: '#3bb50a',
+			color: '#3bb50a',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		earth: {	// nextzen only
+			fill: true,
+			weight: 1,
+			fillColor: '#c0c0c0',
+			color: '#c0c0c0',
+			fillOpacity: 0.2,
+			opacity: 0.4
+		},
+		point: {
+			color: 'transparent',
+		},
+
+		// Do not symbolize some stuff for mapbox
+		country_label: [],
+		marine_label: [],
+		state_label: [],
+		place_label: [],
+		waterway_label: [],
+		poi_label: [],
+		road_label: [],
+		housenum_label: [],
 
 
-			// Do not symbolize some stuff for openmaptiles
-			country_name: [],
-			marine_name: [],
-			state_name: [],
-			place_name: [],
-			waterway_name: [],
-			poi_name: [],
-			road_name: [],
-			housenum_name: [],
-		};
+		// Do not symbolize some stuff for openmaptiles
+		country_name: [],
+		marine_name: [],
+		state_name: [],
+		place_name: [],
+		waterway_name: [],
+		poi_name: [],
+		road_name: [],
+		housenum_name: [],
+	};
 
-		const openmaptilesVectorTileOptions = {
-			getFeatureId: function (e) {
-				if (e.properties.name && map.getZoom() >= 11) {
-					console.log(e.geometry[0][0], e.properties.name)
+	const openmaptilesVectorTileOptions = {
+		getFeatureId: function (e) {
+			if (e.properties.name && map.getZoom() >= 11) {
+				let latLng = map.layerPointToLatLng(e.geometry[0][0]);
+				if (e.geometry[0].length > 2) {
+					latLng = map.layerPointToLatLng(e.geometry[0][parseInt(e.geometry[0].length / 2)]);
 				}
-			},
-			rendererFactory: L.canvas.tile,
-			vectorTileLayerStyles: vectorTileStyling,
-			maxZoom: 14
-		};
+				//console.log(e.properties.name, latLng)
+				//const marker = L.marker(latLng, {
+				//  icon: L.divIcon({
+				//	html: '<span class=labelName>' + e.properties.name + '</span>',
+				//	iconAnchor: [5, 10],
+				//  }),
+				//});
+				//collisionLayer.addLayer(marker);
+			}
+		},
+		rendererFactory: L.canvas.tile,
+		vectorTileLayerStyles: vectorTileStyling,
+		maxZoom: 14
+	};
 
 
-		const offlineLayer = L.vectorGrid.protobuf('/maps/malaysia-singapore-brunei.mbtiles', openmaptilesVectorTileOptions);
-		L.control.layers({
-			Offline: offlineLayer,
-		}, {}, {collapsed: false}).addTo(map);
+	const offlineLayer = L.vectorGrid.protobuf('/maps/malaysia-singapore-brunei.mbtiles', openmaptilesVectorTileOptions);
+	L.control.layers({
+		Offline: offlineLayer,
+	}, {}, {collapsed: false}).addTo(map);
 
-		offlineLayer.on('databaseloaded', (ev) => {
-			setTimeout(() => {
-				// map.panTo(new L.LatLng(5.5308, 102.2019));
-				map.setView(new L.LatLng(3.1390, 101.6869), 6);
-				document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
-			}, 500);
-		});
+	offlineLayer.on('databaseloaded', (ev) => {
+		setTimeout(() => {
+			// map.panTo(new L.LatLng(5.5308, 102.2019));
+			map.setView(new L.LatLng(3.1390, 101.6869), 12);
+			document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
+		}, 500);
+	});
 
-		offlineLayer.on('databaseerror', (ev) => {
-			console.info(ev);
-		});
+	offlineLayer.on('databaseerror', (ev) => {
+		console.info(ev);
+	});
 
   </script>
 </body>
