@@ -1774,6 +1774,7 @@ L.VectorGrid.Protobuf = L.VectorGrid.extend({
 				this.fire('databaseerror', {error: err});
 			})
 		}
+		// TODO this._offlineMap instanceof ArrayBuffer
 		L.VectorGrid.prototype.initialize.call(this, options);
 	},
 

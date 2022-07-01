@@ -5,7 +5,8 @@ A [LeafletJS](http://www.leafletjs.com) plugin to load tilesets in [`.mbtiles` f
 ##### Get your mbtile here https://data.maptiler.com/downloads/planet/
 
 ## Dependencies:
-[Sql,js](https://github.com/sql-js/sql.js/)
+[Leaflet@1.8.0](https://github.com/Leaflet/Leaflet/)
+[Sql.js](https://github.com/sql-js/sql.js/)
 [Leaflet.VectorGrid](https://github.com/Leaflet/Leaflet.VectorGrid)
 [mapbox/pbf](https://github.com/mapbox/pbf)
 [pako,js](https://github.com/nodeca/pako)
