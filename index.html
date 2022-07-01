@@ -13,13 +13,13 @@
   <title>Leaflet Offline Vector Tiles</title>
   <style>
     #map {
-      width: 98vw;
-      height: 98vh;
+      width: 100vw;
+      height: 100vh;
     }
   </style>
 </head>
-<body>
-  <div id='map'></div>
+<body style="margin:0">
+  <div id="map"></div>
 
 
 
@@ -178,7 +178,9 @@
 				fillOpacity: 0.2,
 				opacity: 0.4
 			},
-
+			point: {
+				color: 'transparent',
+			},
 
 			// Do not symbolize some stuff for mapbox
 			country_label: [],
@@ -203,6 +205,11 @@
 		};
 
 		const openmaptilesVectorTileOptions = {
+			getFeatureId: function (e) {
+				if (e.properties.name && map.getZoom() >= 11) {
+					console.log(e.geometry[0][0], e.properties.name)
+				}
+			},
 			rendererFactory: L.canvas.tile,
 			vectorTileLayerStyles: vectorTileStyling,
 			maxZoom: 14
