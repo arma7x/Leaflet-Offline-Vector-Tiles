@@ -203,13 +203,14 @@
 			housenum_name: [],
 		};
 
-		const mapboxVectorTileOptions = {
+		const openmaptilesVectorTileOptions = {
 			rendererFactory: L.canvas.tile,
-			vectorTileLayerStyles: vectorTileStyling
+			vectorTileLayerStyles: vectorTileStyling,
+			maxZoom: 14
 		};
 
 
-		const offlineLayer = L.vectorGrid.protobuf('./maps/malaysia-singapore-brunei.mbtiles', mapboxVectorTileOptions);
+		const offlineLayer = L.vectorGrid.protobuf('./maps/malaysia-singapore-brunei.mbtiles', openmaptilesVectorTileOptions);
 		L.control.layers({
 			Offline: offlineLayer,
 		}, {}, {collapsed: false}).addTo(map);
