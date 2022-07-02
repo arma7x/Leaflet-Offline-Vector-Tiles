@@ -375,7 +375,7 @@ L.VectorGrid = L.GridLayer.extend({
 
 					var styleOptions = layerStyle;
 					if (storeFeatures) {
-						id = this.options.getFeatureId(feat);
+						id = this.options.getFeatureId(feat, coords);
 						var styleOverride = this._overriddenStyles[id];
 						if (styleOverride) {
 							if (styleOverride[layerName]) {

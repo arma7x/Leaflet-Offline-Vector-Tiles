@@ -210,12 +210,16 @@
 	};
 
 	const openmaptilesVectorTileOptions = {
-		getFeatureId: function (e) {
+		getFeatureId: function (e, coords) {
 			if (e.properties.name && map.getZoom() >= 11) {
-				let latLng = map.layerPointToLatLng(e.geometry[0][0]);
-				if (e.geometry[0].length > 2) {
-					latLng = map.layerPointToLatLng(e.geometry[0][parseInt(e.geometry[0].length / 2)]);
+				const coordinates = e.toGeoJSON(coords.x, coords.y, coords.z).geometry.coordinates;
+				let latLng = {};
+				if (coordinates.length > 2) {
+					latLng = {lat: coordinates[0][1], lng: coordinates[0][0]};
+				} else {
+					latLng = {lat: coordinates[1], lng: coordinates[0]};
 				}
+				console.log(e.properties.name, latLng);
 				//console.log(e.properties.name, latLng)
 				//const marker = L.marker(latLng, {
 				//  icon: L.divIcon({
