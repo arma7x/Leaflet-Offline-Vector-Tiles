@@ -2,8 +2,8 @@
 <html>
 <head>
 <link href="/leaflet.min.css" rel="stylesheet" type="text/css" />
-<script src="/leaflet-src.min.js"></script>
 
+<script src="/leaflet-src.min.js"></script>
 <script src="/sql.js"></script>
 <script src="/rbush.js"></script>
 <script src="/Leaflet.VectorGrid.js"></script>
@@ -93,38 +93,7 @@
 			fillOpacity: 0.2,
 			opacity: 0.4
 		},
-		road: {	// mapbox & nextzen only
-			weight: 1,
-			fillColor: 'black',
-			color: 'black',
-			fillOpacity: 0.2,
-			opacity: 0.4
-		},
-		tunnel: {	// mapbox only
-			weight: 0.5,
-			fillColor: 'black',
-			color: 'black',
-			fillOpacity: 0.2,
-			opacity: 0.4,
-			dashArray: [4, 4]
-		},
-		bridge: {	// mapbox only
-			weight: 0.5,
-			fillColor: 'black',
-			color: 'black',
-			fillOpacity: 0.2,
-			opacity: 0.4,
-			dashArray: [4, 4]
-		},
-		transportation: {	// openmaptiles only
-			weight: 1.5,
-			fillColor: 'black',
-			color: 'black',
-			fillOpacity: 0.2,
-			opacity: 0.4,
-			dashArray: [4, 4]
-		},
-		transit: {	// nextzen only
+		transportation: {
 			weight: 0.5,
 			fillColor: 'black',
 			color: 'black',
@@ -175,30 +144,10 @@
 			fillOpacity: 0.2,
 			opacity: 0.4
 		},
-		earth: {	// nextzen only
-			fill: true,
-			weight: 1,
-			fillColor: '#c0c0c0',
-			color: '#c0c0c0',
-			fillOpacity: 0.2,
-			opacity: 0.4
-		},
 		point: {
 			color: 'transparent',
 		},
 
-		// Do not symbolize some stuff for mapbox
-		country_label: [],
-		marine_label: [],
-		state_label: [],
-		place_label: [],
-		waterway_label: [],
-		poi_label: [],
-		road_label: [],
-		housenum_label: [],
-
-
-		// Do not symbolize some stuff for openmaptiles
 		country_name: [],
 		marine_name: [],
 		state_name: [],
@@ -211,7 +160,7 @@
 
 	const openmaptilesVectorTileOptions = {
 		getFeatureId: function (e, coords) {
-			if (e.properties.name && map.getZoom() >= 11) {
+			if (e.properties.name && ['city', 'primary', 'minor', 'river', 'town', 'village', 'railway', 'suburb', 'town_hall', 'toll_booth', 'police', 'neighbourhood', 'lake', 'basin'].indexOf(e.properties.class) > -1) {
 				const coordinates = e.toGeoJSON(coords.x, coords.y, coords.z).geometry.coordinates;
 				let latLng = {};
 				if (typeof coordinates[0] === 'object') {
@@ -223,11 +172,11 @@
 				} else {
 					latLng = { lat: coordinates[1], lng: coordinates[0] };
 				}
-				// console.log(e.properties.name, latLng);
 				const marker = L.marker(latLng, {
 				  icon: L.divIcon({
-					html: '<span class=labelName>' + e.properties.name + '</span>',
-					iconAnchor: [5, 10],
+					html: '<span class="labelName">' + e.properties.name + '</span>',
+					// iconAnchor: [5, 10],
+					iconSize: [6, 6]
 				  }),
 				});
 				collisionLayer.addLayer(marker);
@@ -237,6 +186,12 @@
 		vectorTileLayerStyles: vectorTileStyling,
 		maxZoom: 14
 	};
+
+	map.on('zoomstart', function() {});
+
+	map.on('zoomend', function() {});
+
+	map.on('ready', function() {});
 
 
 	const offlineLayer = L.vectorGrid.protobuf('/maps/malaysia-singapore-brunei.mbtiles', openmaptilesVectorTileOptions);
