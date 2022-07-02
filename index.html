@@ -24,6 +24,13 @@
 	}
 	.labelName {
 		padding-left:5px;
+		font-size: 10px;
+	}
+	.leaflet-control-layers {
+		visibility: hidden;
+	}
+	.leaflet-control-scale-line {
+		border: 2px solid #777!important;
 	}
 </style>
 </head>
@@ -34,7 +41,17 @@
 
   <script>
 
-	const map = new L.Map('map').fitWorld();
+	const map = new L.Map('map', {
+		zoomControl: false,
+		//dragging: false,
+		keyboard: true,
+	}).fitWorld();
+
+	const scale = L.control.scale({
+		position: "topleft",
+		metric: true,
+		imperial: false,
+	}).addTo(map);
 
 	const collisionLayer = L.LayerGroup.collision({margin:5});
 	collisionLayer.addTo(map);
@@ -208,7 +225,6 @@
 
 	offlineLayer.on('databaseloaded', (ev) => {
 		setTimeout(() => {
-			// map.panTo(new L.LatLng(5.5308, 102.2019));
 			map.setView(new L.LatLng(3.1390, 101.6869), 14);
 			document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
 		}, 500);
