@@ -14,10 +14,17 @@
 <meta charset="utf-8">
 <title>Leaflet Offline Vector Tiles</title>
 <style>
-#map {
-  width: 100vw;
-  height: 100vh;
-}
+	#map {
+	  width: 240px;
+	  height: 320px;
+	}
+	.leaflet-marker-icon {
+		background-color: #000;
+		border-radius: 50%;
+	}
+	.labelName {
+		padding-left:5px;
+	}
 </style>
 </head>
 <body style="margin:0">
@@ -139,8 +146,8 @@
 		},
 		poi: {
 			weight: 1,
-			fillColor: '#3bb50a',
-			color: '#3bb50a',
+			fillColor: 'transparent',
+			color: 'transparent',
 			fillOpacity: 0.2,
 			opacity: 0.4
 		},
@@ -160,7 +167,7 @@
 
 	const openmaptilesVectorTileOptions = {
 		getFeatureId: function (e, coords) {
-			if (e.properties.name && ['city', 'primary', 'minor', 'river', 'town', 'village', 'railway', 'suburb', 'town_hall', 'toll_booth', 'police', 'neighbourhood', 'lake', 'basin'].indexOf(e.properties.class) > -1) {
+			if (e.properties.name && ['city', 'primary', 'minor', 'river', 'town', 'village', 'railway', 'suburb', 'town_hall', 'toll_booth', 'police', 'neighbourhood', 'lake', 'basin', 'poi'].indexOf(e.properties.class) > -1) {
 				const coordinates = e.toGeoJSON(coords.x, coords.y, coords.z).geometry.coordinates;
 				let latLng = {};
 				if (typeof coordinates[0] === 'object') {
