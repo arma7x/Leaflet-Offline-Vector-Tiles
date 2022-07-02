@@ -214,20 +214,23 @@
 			if (e.properties.name && map.getZoom() >= 11) {
 				const coordinates = e.toGeoJSON(coords.x, coords.y, coords.z).geometry.coordinates;
 				let latLng = {};
-				if (coordinates.length > 2) {
-					latLng = {lat: coordinates[0][1], lng: coordinates[0][0]};
+				if (typeof coordinates[0] === 'object') {
+					if (typeof coordinates[0][0] === 'object') {
+						latLng = { lat: coordinates[0][0][1], lng: coordinates[0][0][0] };
+					} else {
+						latLng = { lat: coordinates[0][1], lng: coordinates[0][0] };
+					}
 				} else {
-					latLng = {lat: coordinates[1], lng: coordinates[0]};
+					latLng = { lat: coordinates[1], lng: coordinates[0] };
 				}
-				console.log(e.properties.name, latLng);
-				//console.log(e.properties.name, latLng)
-				//const marker = L.marker(latLng, {
-				//  icon: L.divIcon({
-				//	html: '<span class=labelName>' + e.properties.name + '</span>',
-				//	iconAnchor: [5, 10],
-				//  }),
-				//});
-				//collisionLayer.addLayer(marker);
+				// console.log(e.properties.name, latLng);
+				const marker = L.marker(latLng, {
+				  icon: L.divIcon({
+					html: '<span class=labelName>' + e.properties.name + '</span>',
+					iconAnchor: [5, 10],
+				  }),
+				});
+				collisionLayer.addLayer(marker);
 			}
 		},
 		rendererFactory: L.canvas.tile,
@@ -244,7 +247,7 @@
 	offlineLayer.on('databaseloaded', (ev) => {
 		setTimeout(() => {
 			// map.panTo(new L.LatLng(5.5308, 102.2019));
-			map.setView(new L.LatLng(3.1390, 101.6869), 12);
+			map.setView(new L.LatLng(3.1390, 101.6869), 14);
 			document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
 		}, 500);
 	});
