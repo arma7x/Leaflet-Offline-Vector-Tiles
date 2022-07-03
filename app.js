@@ -1,4 +1,4 @@
-
+document.addEventListener('DOMContentLoaded', () => {
 
 	const map = new L.Map('map', {
 		zoomControl: false,
@@ -192,3 +192,5 @@
 	offlineLayer.on('databaseerror', (ev) => {
 		console.info(ev);
 	});
+
+});
