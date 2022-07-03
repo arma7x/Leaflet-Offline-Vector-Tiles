@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const map = new L.Map('map', {
 		zoomControl: false,
-		//dragging: false,
+		// dragging: false,
 		keyboard: true,
 	}).fitWorld();
 
@@ -176,21 +176,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	map.on('ready', function() {});
 
+	fetch('/maps/malaysia-singapore-brunei.mbtiles')
+	.then(response => {
+		return response.arrayBuffer();
+	}).then(buffer => {
 
-	const offlineLayer = L.vectorGrid.protobuf('/maps/malaysia-singapore-brunei.mbtiles', openmaptilesVectorTileOptions);
-	L.control.layers({
-		Offline: offlineLayer,
-	}, {}, {collapsed: false}).addTo(map);
+		const offlineLayer = L.vectorGrid.protobuf(buffer, openmaptilesVectorTileOptions);
+		L.control.layers({
+			Offline: offlineLayer,
+		}, {}, {collapsed: false}).addTo(map);
 
-	offlineLayer.on('databaseloaded', (ev) => {
-		setTimeout(() => {
-			map.setView(new L.LatLng(3.1390, 101.6869), 14);
-			document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
-		}, 500);
+		offlineLayer.on('databaseloaded', (ev) => {
+			setTimeout(() => {
+				map.setView(new L.LatLng(3.1390, 101.6869), 14);
+				document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
+			}, 500);
+		});
+
+		offlineLayer.on('databaseerror', (ev) => {
+			console.info(ev);
+		});
+
+	}).catch(err => {
+		console.log(err);
 	});
-
-	offlineLayer.on('databaseerror', (ev) => {
-		console.info(ev);
-	});
-
 });

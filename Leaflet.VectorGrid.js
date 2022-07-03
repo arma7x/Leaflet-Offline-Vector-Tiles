@@ -1760,34 +1760,11 @@ L.VectorGrid.Protobuf = L.VectorGrid.extend({
 		fetchOptions: {}
 	},
 
-	initialize: function(url, options) {
+	initialize: function(buffer, options) {
 		// Inherits options from geojson-vt!
 // 		this._slicer = geojsonvt(geojson, options);
-		this._url = url;
-		this._offlineMap = this._url;
-		if (this._offlineMap) {
-			fetch(this._offlineMap).then(response => {
-				return response.arrayBuffer();
-			}).then(buffer => {
-				this._openDB(buffer);
-			}).catch(err=>{
-				this.fire('databaseerror', {error: err});
-			})
-		}
-		// TODO this._offlineMap instanceof ArrayBuffer
+		this._openDB(buffer);
 		L.VectorGrid.prototype.initialize.call(this, options);
-	},
-
-	// 🍂method setUrl(url: String, noRedraw?: Boolean): this
-	// Updates the layer's URL template and redraws it (unless `noRedraw` is set to `true`).
-	setUrl: function(url, noRedraw) {
-		this._url = url;
-
-		if (!noRedraw) {
-			this.redraw();
-		}
-
-		return this;
 	},
 
 	_openDB: function(buffer) {
@@ -1838,22 +1815,6 @@ L.VectorGrid.Protobuf = L.VectorGrid.extend({
 	_getSubdomain: L.TileLayer.prototype._getSubdomain,
 
 	_getVectorTilePromise: function(coords) {
-		var data = {
-			s: this._getSubdomain(coords),
-			x: coords.x,
-			y: coords.y,
-			z: coords.z
-// 			z: this._getZoomForUrl()	/// TODO: Maybe replicate TileLayer's maxNativeZoom
-		};
-		if (this._map && !this._map.options.crs.infinite) {
-			var invertedY = this._globalTileRange.max.y - coords.y;
-			if (this.options.tms) { // Should this option be available in Leaflet.VectorGrid?
-				data['y'] = invertedY;
-			}
-			data['-y'] = invertedY;
-		}
-
-		var tileUrl = L.Util.template(this._url, L.extend(data, this.options));
 		const _this = this;
 		if (this._databaseIsLoaded) {
 			var row = this._stmt.getAsObject({
