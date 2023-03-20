@@ -97,12 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		water_name: {
 			color: 'transparent',
 		},
-		transportation: {
-			weight: 1,
-			fillColor: 'white',
-			color: 'white',
-			fillOpacity: 1,
-			opacity: 1,
+		transportation: (properties) => {
+			return trafficStyle(properties, false)
 		},
 		transportation_name: (properties) => {
 			return trafficStyle(properties, false)
@@ -151,14 +147,69 @@ document.addEventListener('DOMContentLoaded', () => {
 		},
 	};
 
+	function hashCode(str) {
+		let hash = 0;
+		for (let i = 0; i < str.length; i++) {
+			hash = str.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		return hash;
+	}
+
+	function intToRGB(i){
+		var c = (i & 0x00FFFFFF).toString(16).toUpperCase();
+		return "00000".substring(0, 6 - c.length) + c;
+	}
+
+	function colorGenerator() {
+		let dict = {};
+		console.log(dict);
+		return (string) => {
+			if (['rail'].indexOf(string) > -1) {
+				dict[string] = '#000000';
+				return dict[string];
+			}
+			if (['transit'].indexOf(string) > -1) {
+				dict[string] = '#FF5F83';
+				return dict[string];
+			}
+			if (['minor', 'tertiary', 'service'].indexOf(string) > -1) {
+				dict[string] = '#FFFFFF';
+				return dict[string];
+			}
+			if (dict[string] != null) {
+				return dict[string];
+			}
+			dict[string] = '#' + intToRGB(hashCode(string));
+			return dict[string];
+		}
+	}
+
+	function getDashArray(properties) {
+		if (['rail', 'transit'].indexOf(properties.class) > -1)
+			return [12, 12];
+		if (['path', 'track'].indexOf(properties.class) > -1)
+			return [5, 5];
+		return [];
+	}
+
+	function getWeight(properties) {
+		if (['path', 'track'].indexOf(properties.class) > -1)
+			return 0.1;
+		if (["motorway", "trunk", "primary", "secondary"].indexOf(properties.class) > -1)
+			return 3.5;
+		return 2;
+	}
+
+	const cg = colorGenerator();
+
 	function trafficStyle(properties) {
-		console.log(properties);
 		return {
-			weight: 2,
-			fillColor: '#E892A2',
-			color: '#E892A2',
+			weight: getWeight(properties),
+			fillColor: cg(properties.class),
+			color: cg(properties.class),
 			fillOpacity: 1,
-			opacity: 1
+			opacity: 1,
+			dashArray: getDashArray(properties)
 		}
 	}
 
@@ -179,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 				const marker = L.marker(latLng, {
 				  icon: L.divIcon({
-					html: '<span class="labelName">' + e.properties.name + '</span>',
+					html: '<span class="labelName" style="font-weight:bold;">' + e.properties.name + '</span>',
 					iconAnchor: [0, 0],
 					iconSize: [0, 0]
 				  }),
@@ -210,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		offlineLayer.on('databaseloaded', (ev) => {
 			setTimeout(() => {
-				map.setView(new L.LatLng(3.1390, 101.6869), 14);
+				map.setView(new L.LatLng(3.1641, 101.6883), 14);
 				document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
 			}, 500);
 		});
