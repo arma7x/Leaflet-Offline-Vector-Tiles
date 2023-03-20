@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
 	const map = new L.Map('map', {
-		zoomControl: false,
-		// dragging: false,
+		zoomControl: true,
+		dragging: true,
 		keyboard: true,
 	}).fitWorld();
 
@@ -19,24 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
 		water: {
 			fill: true,
 			weight: 1,
-			fillColor: '#06cccc',
-			color: '#06cccc',
-			fillOpacity: 0.2,
-			opacity: 0.4,
-		},
-		admin: {
-			weight: 1,
-			fillColor: 'pink',
-			color: 'pink',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			fillColor: '#005BD1',
+			color: '#005BD1',
+			fillOpacity: 1,
+			opacity: 1,
 		},
 		waterway: {
 			weight: 1,
-			fillColor: '#2375e0',
-			color: '#2375e0',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			fillColor: '#005BD1',
+			color: '#005BD1',
+			fillOpacity: 1,
+			opacity: 1
+		},
+		admin: {
+			weight: 1,
+			fillColor: 'red',
+			color: 'red',
+			fillOpacity: 1,
+			opacity: 1
 		},
 		landcover: {
 			fill: true,
@@ -63,11 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			opacity: 0.4
 		},
 		boundary: {
-			weight: 1,
-			fillColor: '#9C42A6',
-			color: '#9C42A6',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			color: 'transparent',
 		},
 		aeroway: {
 			weight: 1,
@@ -76,74 +72,100 @@ document.addEventListener('DOMContentLoaded', () => {
 			fillOpacity: 0.2,
 			opacity: 0.4
 		},
-		transportation: {
-			weight: 0.5,
+		road: {
+			weight: 1,
 			fillColor: 'black',
 			color: 'black',
-			fillOpacity: 0.2,
-			opacity: 0.4,
-			dashArray: [4, 4]
+			fillOpacity: 1,
+			opacity: 1
+		},
+		transit: {
+			weight:1,
+			fillColor: 'black',
+			color: 'black',
+			fillOpacity: 1,
+			opacity: 1
 		},
 		building: {
 			fill: true,
 			weight: 1,
-			fillColor: '#2b2b2b',
-			color: '#2b2b2b',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			fillColor: '#BCBCBC',
+			color: '#BCBCBC',
+			fillOpacity: 1,
+			opacity: 1
 		},
 		water_name: {
-			weight: 1,
-			fillColor: '#022c5b',
-			color: '#022c5b',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			color: 'transparent',
 		},
-		transportation_name: {
+		transportation: {
 			weight: 1,
-			fillColor: '#bc6b38',
-			color: '#bc6b38',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			fillColor: 'white',
+			color: 'white',
+			fillOpacity: 1,
+			opacity: 1,
+		},
+		transportation_name: (properties) => {
+			return trafficStyle(properties, false)
 		},
 		place: {
-			weight: 1,
-			fillColor: '#f20e93',
-			color: '#f20e93',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			color: 'transparent',
 		},
 		housenumber: {
-			weight: 1,
-			fillColor: '#ef4c8b',
-			color: '#ef4c8b',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			color: 'transparent',
 		},
 		poi: {
-			weight: 1,
-			fillColor: 'transparent',
 			color: 'transparent',
-			fillOpacity: 0.2,
-			opacity: 0.4
 		},
 		point: {
 			color: 'transparent',
 		},
-
-		country_name: [],
-		marine_name: [],
-		state_name: [],
-		place_name: [],
-		waterway_name: [],
-		poi_name: [],
-		road_name: [],
-		housenum_name: [],
+		mountain_peak: {
+			color: 'transparent',
+		},
+		country_name: {
+			color: 'transparent',
+		},
+		marine_name: {
+			color: 'transparent',
+		},
+		state_name: {
+			color: 'transparent',
+		},
+		place_name: {
+			color: 'transparent',
+		},
+		waterway_name: {
+			color: 'transparent',
+		},
+		poi_name: {
+			color: 'transparent',
+		},
+		road_name: {
+			color: 'transparent',
+		},
+		housenum_name: {
+			color: 'transparent',
+		},
+		aerodrome_label: {
+			color: 'transparent',
+		},
 	};
+
+	function trafficStyle(properties) {
+		console.log(properties);
+		return {
+			weight: 2,
+			fillColor: '#E892A2',
+			color: '#E892A2',
+			fillOpacity: 1,
+			opacity: 1
+		}
+	}
 
 	const openmaptilesVectorTileOptions = {
 		getFeatureId: function (e, coords) {
-			if (e.properties.name && ['city', 'primary', 'minor', 'river', 'town', 'village', 'railway', 'suburb', 'town_hall', 'toll_booth', 'police', 'neighbourhood', 'lake', 'basin', 'poi'].indexOf(e.properties.class) > -1) {
+			// console.log(e.properties.class, e.properties.name);
+			if (e.properties.name && ['city', 'town', 'village', 'railway', 'suburb', 'toll_booth', 'police', 'neighbourhood', 'lake'].indexOf(e.properties.class) > -1) {
 				const coordinates = e.toGeoJSON(coords.x, coords.y, coords.z).geometry.coordinates;
 				let latLng = {};
 				if (typeof coordinates[0] === 'object') {
@@ -158,8 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				const marker = L.marker(latLng, {
 				  icon: L.divIcon({
 					html: '<span class="labelName">' + e.properties.name + '</span>',
-					// iconAnchor: [5, 10],
-					iconSize: [6, 6]
+					iconAnchor: [0, 0],
+					iconSize: [0, 0]
 				  }),
 				});
 				collisionLayer.addLayer(marker);
