@@ -1,5 +1,3 @@
-
-
 var isMSIE8 = ! ('getComputedStyle' in window && typeof window.getComputedStyle === 'function')
 
 L.LayerGroup.Collision = L.LayerGroup.extend({
@@ -186,4 +184,3 @@ if (isMSIE8) {
 L.LayerGroup.collision = function (options) {
 	return new L.LayerGroup.Collision(options);
 };
-

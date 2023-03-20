@@ -1,86 +1,92 @@
 'use strict';
 
-function __$strToBlobUri(str, mime, isBinary) {try {return window.URL.createObjectURL(new Blob([Uint8Array.from(str.split('').map(function(c) {return c.charCodeAt(0)}))], {type: mime}));} catch (e) {return "data:" + mime + (isBinary ? ";base64," : ",") + str;}}
+function __$strToBlobUri(str, mime, isBinary) {
+    try {
+        return window.URL.createObjectURL(new Blob([Uint8Array.from(str.split('').map(function(c) {return c.charCodeAt(0)}))], {type: mime}));
+    } catch (e) {
+        return "data:" + mime + (isBinary ? ";base64," : ",") + str;
+    }
+}
 
 L.SVG.Tile = L.SVG.extend({
 
-	initialize: function (tileCoord, tileSize, options) {
-		L.SVG.prototype.initialize.call(this, options);
-		this._tileCoord = tileCoord;
-		this._size = tileSize;
+    initialize: function (tileCoord, tileSize, options) {
+        L.SVG.prototype.initialize.call(this, options);
+        this._tileCoord = tileCoord;
+        this._size = tileSize;
 
-		this._initContainer();
-		this._container.setAttribute('width', this._size.x);
-		this._container.setAttribute('height', this._size.y);
-		this._container.setAttribute('viewBox', [0, 0, this._size.x, this._size.y].join(' '));
+        this._initContainer();
+        this._container.setAttribute('width', this._size.x);
+        this._container.setAttribute('height', this._size.y);
+        this._container.setAttribute('viewBox', [0, 0, this._size.x, this._size.y].join(' '));
 
-		this._layers = {};
-	},
+        this._layers = {};
+    },
 
-	getCoord: function() {
-		return this._tileCoord;
-	},
+    getCoord: function() {
+        return this._tileCoord;
+    },
 
-	getContainer: function() {
-		return this._container;
-	},
+    getContainer: function() {
+        return this._container;
+    },
 
-	onAdd: L.Util.falseFn,
+    onAdd: L.Util.falseFn,
 
-	addTo: function(map) {
-		this._map = map;
-		if (this.options.interactive) {
-			for (var i in this._layers) {
-				var layer = this._layers[i];
-				// By default, Leaflet tiles do not have pointer events.
-				layer._path.style.pointerEvents = 'auto';
-				this._map._targets[L.stamp(layer._path)] = layer;
-			}
-		}
-	},
+    addTo: function(map) {
+        this._map = map;
+        if (this.options.interactive) {
+            for (var i in this._layers) {
+                var layer = this._layers[i];
+                // By default, Leaflet tiles do not have pointer events.
+                layer._path.style.pointerEvents = 'auto';
+                this._map._targets[L.stamp(layer._path)] = layer;
+            }
+        }
+    },
 
-	removeFrom: function (map) {
-		if (this.options.interactive) {
-			for (var i in this._layers) {
-				var layer = this._layers[i];
-				delete this._map._targets[L.stamp(layer._path)];
-			}
-		}
-		delete this._map;
-	},
+    removeFrom: function (map) {
+        if (this.options.interactive) {
+            for (var i in this._layers) {
+                var layer = this._layers[i];
+                delete this._map._targets[L.stamp(layer._path)];
+            }
+        }
+        delete this._map;
+    },
 
-	_initContainer: function() {
-		L.SVG.prototype._initContainer.call(this);
-		var rect =  L.SVG.create('rect');
-	},
+    _initContainer: function() {
+        L.SVG.prototype._initContainer.call(this);
+        var rect =  L.SVG.create('rect');
+    },
 
-	/// TODO: Modify _initPath to include an extra parameter, a group name
-	/// to order symbolizers by z-index
+    /// TODO: Modify _initPath to include an extra parameter, a group name
+    /// to order symbolizers by z-index
 
-	_addPath: function (layer) {
-		this._rootGroup.appendChild(layer._path);
-		this._layers[L.stamp(layer)] = layer;
-	},
+    _addPath: function (layer) {
+        this._rootGroup.appendChild(layer._path);
+        this._layers[L.stamp(layer)] = layer;
+    },
 
-	_updateIcon: function (layer) {
-		var path = layer._path = L.SVG.create('image'),
-		    icon = layer.options.icon,
-		    options = icon.options,
-		    size = L.point(options.iconSize),
-		    anchor = options.iconAnchor ||
-		        	 size && size.divideBy(2, true),
-		    p = layer._point.subtract(anchor);
-		path.setAttribute('x', p.x);
-		path.setAttribute('y', p.y);
-		path.setAttribute('width', size.x + 'px');
-		path.setAttribute('height', size.y + 'px');
-		path.setAttribute('href', options.iconUrl);
-	}
+    _updateIcon: function (layer) {
+        var path = layer._path = L.SVG.create('image'),
+            icon = layer.options.icon,
+            options = icon.options,
+            size = L.point(options.iconSize),
+            anchor = options.iconAnchor ||
+                     size && size.divideBy(2, true),
+            p = layer._point.subtract(anchor);
+        path.setAttribute('x', p.x);
+        path.setAttribute('y', p.y);
+        path.setAttribute('width', size.x + 'px');
+        path.setAttribute('height', size.y + 'px');
+        path.setAttribute('href', options.iconUrl);
+    }
 });
 
 
 L.svg.tile = function(tileCoord, tileSize, opts){
-	return new L.SVG.Tile(tileCoord, tileSize, opts);
+    return new L.SVG.Tile(tileCoord, tileSize, opts);
 };
 
 // 🍂class Symbolizer
@@ -94,73 +100,73 @@ L.svg.tile = function(tileCoord, tileSize, opts){
 // The actual symbolizers applied will depend on filters and the symbolizer functions.
 
 var Symbolizer = L.Class.extend({
-	// 🍂method initialize(feature: GeoJSON, pxPerExtent: Number)
-	// Initializes a new Line Symbolizer given a GeoJSON feature and the
-	// pixel-to-coordinate-units ratio. Internal use only.
+    // 🍂method initialize(feature: GeoJSON, pxPerExtent: Number)
+    // Initializes a new Line Symbolizer given a GeoJSON feature and the
+    // pixel-to-coordinate-units ratio. Internal use only.
 
-	// 🍂method render(renderer, style)
-	// Renders this symbolizer in the given tiled renderer, with the given
-	// `L.Path` options.  Internal use only.
-	render: function(renderer, style) {
-		this._renderer = renderer;
-		this.options = style;
-		renderer._initPath(this);
-		renderer._updateStyle(this);
-	},
+    // 🍂method render(renderer, style)
+    // Renders this symbolizer in the given tiled renderer, with the given
+    // `L.Path` options.  Internal use only.
+    render: function(renderer, style) {
+        this._renderer = renderer;
+        this.options = style;
+        renderer._initPath(this);
+        renderer._updateStyle(this);
+    },
 
-	// 🍂method render(renderer, style)
-	// Updates the `L.Path` options used to style this symbolizer, and re-renders it.
-	// Internal use only.
-	updateStyle: function(renderer, style) {
-		this.options = style;
-		renderer._updateStyle(this);
-	},
+    // 🍂method render(renderer, style)
+    // Updates the `L.Path` options used to style this symbolizer, and re-renders it.
+    // Internal use only.
+    updateStyle: function(renderer, style) {
+        this.options = style;
+        renderer._updateStyle(this);
+    },
 
-	_getPixelBounds: function() {
-		var parts = this._parts;
-		var bounds = L.bounds([]);
-		for (var i = 0; i < parts.length; i++) {
-			var part = parts[i];
-			for (var j = 0; j < part.length; j++) {
-				bounds.extend(part[j]);
-			}
-		}
+    _getPixelBounds: function() {
+        var parts = this._parts;
+        var bounds = L.bounds([]);
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            for (var j = 0; j < part.length; j++) {
+                bounds.extend(part[j]);
+            }
+        }
 
-		var w = this._clickTolerance(),
-		    p = new L.Point(w, w);
+        var w = this._clickTolerance(),
+            p = new L.Point(w, w);
 
-		bounds.min._subtract(p);
-		bounds.max._add(p);
+        bounds.min._subtract(p);
+        bounds.max._add(p);
 
-		return bounds;
-	},
-	_clickTolerance: L.Path.prototype._clickTolerance,
+        return bounds;
+    },
+    _clickTolerance: L.Path.prototype._clickTolerance,
 });
 
 // Contains mixins which are common to the Line Symbolizer and the Fill Symbolizer.
 
 var PolyBase = {
-	_makeFeatureParts: function(feat, pxPerExtent) {
-		var rings = feat.geometry;
-		var coord;
+    _makeFeatureParts: function(feat, pxPerExtent) {
+        var rings = feat.geometry;
+        var coord;
 
-		this._parts = [];
-		for (var i = 0; i < rings.length; i++) {
-			var ring = rings[i];
-			var part = [];
-			for (var j = 0; j < ring.length; j++) {
-				coord = ring[j];
-				// Protobuf vector tiles return {x: , y:}
-				// Geojson-vt returns [,]
-				part.push(L.point(coord).scaleBy(pxPerExtent));
-			}
-			this._parts.push(part);
-		}
-	},
+        this._parts = [];
+        for (var i = 0; i < rings.length; i++) {
+            var ring = rings[i];
+            var part = [];
+            for (var j = 0; j < ring.length; j++) {
+                coord = ring[j];
+                // Protobuf vector tiles return {x: , y:}
+                // Geojson-vt returns [,]
+                part.push(L.point(coord).scaleBy(pxPerExtent));
+            }
+            this._parts.push(part);
+        }
+    },
 
-	makeInteractive: function() {
-		this._pxBounds = this._getPixelBounds();
-	}
+    makeInteractive: function() {
+        this._pxBounds = this._getPixelBounds();
+    }
 };
 
 // 🍂class PointSymbolizer
@@ -168,114 +174,114 @@ var PolyBase = {
 // A symbolizer for points.
 
 var PointSymbolizer = L.CircleMarker.extend({
-	includes: Symbolizer.prototype,
+    includes: Symbolizer.prototype,
 
-	statics: {
-		iconCache: {}
-	},
+    statics: {
+        iconCache: {}
+    },
 
-	initialize: function(feature, pxPerExtent) {
-		this.properties = feature.properties;
-		this._makeFeatureParts(feature, pxPerExtent);
-	},
+    initialize: function(feature, pxPerExtent) {
+        this.properties = feature.properties;
+        this._makeFeatureParts(feature, pxPerExtent);
+    },
 
-	render: function(renderer, style) {
-		Symbolizer.prototype.render.call(this, renderer, style);
-		this._radius = style.radius || L.CircleMarker.prototype.options.radius;
-		this._updatePath();
-	},
+    render: function(renderer, style) {
+        Symbolizer.prototype.render.call(this, renderer, style);
+        this._radius = style.radius || L.CircleMarker.prototype.options.radius;
+        this._updatePath();
+    },
 
-	_makeFeatureParts: function(feat, pxPerExtent) {
-		var coord = feat.geometry[0];
-		if (typeof coord[0] === 'object' && 'x' in coord[0]) {
-			// Protobuf vector tiles return [{x: , y:}]
-			this._point = L.point(coord[0]).scaleBy(pxPerExtent);
-			this._empty = L.Util.falseFn;
-		} else {
-			// Geojson-vt returns [,]
-			this._point = L.point(coord).scaleBy(pxPerExtent);
-			this._empty = L.Util.falseFn;
-		}
-	},
+    _makeFeatureParts: function(feat, pxPerExtent) {
+        var coord = feat.geometry[0];
+        if (typeof coord[0] === 'object' && 'x' in coord[0]) {
+            // Protobuf vector tiles return [{x: , y:}]
+            this._point = L.point(coord[0]).scaleBy(pxPerExtent);
+            this._empty = L.Util.falseFn;
+        } else {
+            // Geojson-vt returns [,]
+            this._point = L.point(coord).scaleBy(pxPerExtent);
+            this._empty = L.Util.falseFn;
+        }
+    },
 
-	makeInteractive: function() {
-		this._updateBounds();
-	},
+    makeInteractive: function() {
+        this._updateBounds();
+    },
 
-	updateStyle: function(renderer, style) {
-		this._radius = style.radius || this._radius;
-		this._updateBounds();
-		return Symbolizer.prototype.updateStyle.call(this, renderer, style);
-	},
+    updateStyle: function(renderer, style) {
+        this._radius = style.radius || this._radius;
+        this._updateBounds();
+        return Symbolizer.prototype.updateStyle.call(this, renderer, style);
+    },
 
-	_updateBounds: function() {
-		var icon = this.options.icon;
-		if (icon) {
-			var size = L.point(icon.options.iconSize),
-			    anchor = icon.options.iconAnchor ||
-			             size && size.divideBy(2, true),
-			    p = this._point.subtract(anchor);
-			this._pxBounds = new L.Bounds(p, p.add(icon.options.iconSize));
-		} else {
-			L.CircleMarker.prototype._updateBounds.call(this);
-		}
-	},
+    _updateBounds: function() {
+        var icon = this.options.icon;
+        if (icon) {
+            var size = L.point(icon.options.iconSize),
+                anchor = icon.options.iconAnchor ||
+                         size && size.divideBy(2, true),
+                p = this._point.subtract(anchor);
+            this._pxBounds = new L.Bounds(p, p.add(icon.options.iconSize));
+        } else {
+            L.CircleMarker.prototype._updateBounds.call(this);
+        }
+    },
 
-	_updatePath: function() {
-		if (this.options.icon) {
-			this._renderer._updateIcon(this);
-		} else {
-			L.CircleMarker.prototype._updatePath.call(this);
-		}
-	},
+    _updatePath: function() {
+        if (this.options.icon) {
+            this._renderer._updateIcon(this);
+        } else {
+            L.CircleMarker.prototype._updatePath.call(this);
+        }
+    },
 
-	_getImage: function () {
-		if (this.options.icon) {
-			var url = this.options.icon.options.iconUrl,
-			    img = PointSymbolizer.iconCache[url];
-			if (!img) {
-				var icon = this.options.icon;
-				img = PointSymbolizer.iconCache[url] = icon.createIcon();
-			}
-			return img;
-		} else {
-			return null;
-		}
+    _getImage: function () {
+        if (this.options.icon) {
+            var url = this.options.icon.options.iconUrl,
+                img = PointSymbolizer.iconCache[url];
+            if (!img) {
+                var icon = this.options.icon;
+                img = PointSymbolizer.iconCache[url] = icon.createIcon();
+            }
+            return img;
+        } else {
+            return null;
+        }
 
-	},
+    },
 
-	_containsPoint: function(p) {
-		var icon = this.options.icon;
-		if (icon) {
-			return this._pxBounds.contains(p);
-		} else {
-			return L.CircleMarker.prototype._containsPoint.call(this, p);
-		}
-	}
-});
+    _containsPoint: function(p) {
+        var icon = this.options.icon;
+        if (icon) {
+            return this._pxBounds.contains(p);
+        } else {
+            return L.CircleMarker.prototype._containsPoint.call(this, p);
+        }
+    }
+    });
 
-// 🍂class LineSymbolizer
-// 🍂inherits Polyline
-// A symbolizer for lines. Can be applied to line and polygon features.
+    // 🍂class LineSymbolizer
+    // 🍂inherits Polyline
+    // A symbolizer for lines. Can be applied to line and polygon features.
 
-var LineSymbolizer = L.Polyline.extend({
-	includes: [Symbolizer.prototype, PolyBase],
+    var LineSymbolizer = L.Polyline.extend({
+    includes: [Symbolizer.prototype, PolyBase],
 
-	initialize: function(feature, pxPerExtent) {
-		this.properties = feature.properties;
-		this._makeFeatureParts(feature, pxPerExtent);
-	},
+    initialize: function(feature, pxPerExtent) {
+        this.properties = feature.properties;
+        this._makeFeatureParts(feature, pxPerExtent);
+    },
 
-	render: function(renderer, style) {
-		style.fill = false;
-		Symbolizer.prototype.render.call(this, renderer, style);
-		this._updatePath();
-	},
+    render: function(renderer, style) {
+        style.fill = false;
+        Symbolizer.prototype.render.call(this, renderer, style);
+        this._updatePath();
+    },
 
-	updateStyle: function(renderer, style) {
-		style.fill = false;
-		Symbolizer.prototype.updateStyle.call(this, renderer, style);
-	},
+    updateStyle: function(renderer, style) {
+        style.fill = false;
+        Symbolizer.prototype.updateStyle.call(this, renderer, style);
+    },
 });
 
 // 🍂class FillSymbolizer
@@ -283,17 +289,17 @@ var LineSymbolizer = L.Polyline.extend({
 // A symbolizer for filled areas. Applies only to polygon features.
 
 var FillSymbolizer = L.Polygon.extend({
-	includes: [Symbolizer.prototype, PolyBase],
+    includes: [Symbolizer.prototype, PolyBase],
 
-	initialize: function(feature, pxPerExtent) {
-		this.properties = feature.properties;
-		this._makeFeatureParts(feature, pxPerExtent);
-	},
+    initialize: function(feature, pxPerExtent) {
+        this.properties = feature.properties;
+        this._makeFeatureParts(feature, pxPerExtent);
+    },
 
-	render: function(renderer, style) {
-		Symbolizer.prototype.render.call(this, renderer, style);
-		this._updatePath();
-	}
+    render: function(renderer, style) {
+        Symbolizer.prototype.render.call(this, renderer, style);
+        this._updatePath();
+    }
 });
 
 /* 🍂class VectorGrid
@@ -309,211 +315,211 @@ var FillSymbolizer = L.Polygon.extend({
 
 L.VectorGrid = L.GridLayer.extend({
 
-	options: {
-		// 🍂option rendererFactory = L.svg.tile
-		// A factory method which will be used to instantiate the per-tile renderers.
-		rendererFactory: L.svg.tile,
+    options: {
+        // 🍂option rendererFactory = L.svg.tile
+        // A factory method which will be used to instantiate the per-tile renderers.
+        rendererFactory: L.svg.tile,
 
-		// 🍂option vectorTileLayerStyles: Object = {}
-		// A data structure holding initial symbolizer definitions for the vector features.
-		vectorTileLayerStyles: {},
+        // 🍂option vectorTileLayerStyles: Object = {}
+        // A data structure holding initial symbolizer definitions for the vector features.
+        vectorTileLayerStyles: {},
 
-		// 🍂option interactive: Boolean = false
-		// Whether this `VectorGrid` fires `Interactive Layer` events.
-		interactive: false,
+        // 🍂option interactive: Boolean = false
+        // Whether this `VectorGrid` fires `Interactive Layer` events.
+        interactive: false,
 
-		// 🍂option getFeatureId: Function = undefined
-		// A function that, given a vector feature, returns an unique identifier for it, e.g.
-		// `function(feat) { return feat.properties.uniqueIdField; }`.
-		// Must be defined for `setFeatureStyle` to work.
-	},
+        // 🍂option getFeatureId: Function = undefined
+        // A function that, given a vector feature, returns an unique identifier for it, e.g.
+        // `function(feat) { return feat.properties.uniqueIdField; }`.
+        // Must be defined for `setFeatureStyle` to work.
+    },
 
-	initialize: function(options) {
-		L.setOptions(this, options);
-		L.GridLayer.prototype.initialize.apply(this, arguments);
-		if (this.options.getFeatureId) {
-			this._vectorTiles = {};
-			this._overriddenStyles = {};
-			this.on('tileunload', function(e) {
-				var key = this._tileCoordsToKey(e.coords),
-				    tile = this._vectorTiles[key];
+    initialize: function(options) {
+        L.setOptions(this, options);
+        L.GridLayer.prototype.initialize.apply(this, arguments);
+        if (this.options.getFeatureId) {
+            this._vectorTiles = {};
+            this._overriddenStyles = {};
+            this.on('tileunload', function(e) {
+                var key = this._tileCoordsToKey(e.coords),
+                    tile = this._vectorTiles[key];
 
-				if (tile && this._map) {
-					tile.removeFrom(this._map);
-				}
-				delete this._vectorTiles[key];
-			}, this);
-		}
-		this._dataLayerNames = {};
-	},
+                if (tile && this._map) {
+                    tile.removeFrom(this._map);
+                }
+                delete this._vectorTiles[key];
+            }, this);
+        }
+        this._dataLayerNames = {};
+    },
 
-	createTile: function(coords, done) {
-		var storeFeatures = this.options.getFeatureId;
+    createTile: function(coords, done) {
+        var storeFeatures = this.options.getFeatureId;
 
-		var tileSize = this.getTileSize();
-		var renderer = this.options.rendererFactory(coords, tileSize, this.options);
+        var tileSize = this.getTileSize();
+        var renderer = this.options.rendererFactory(coords, tileSize, this.options);
 
-		var vectorTilePromise = this._getVectorTilePromise(coords);
+        var vectorTilePromise = this._getVectorTilePromise(coords);
 
-		if (storeFeatures) {
-			this._vectorTiles[this._tileCoordsToKey(coords)] = renderer;
-			renderer._features = {};
-		}
+        if (storeFeatures) {
+            this._vectorTiles[this._tileCoordsToKey(coords)] = renderer;
+            renderer._features = {};
+        }
 
-		vectorTilePromise.then( function renderTile(vectorTile) {
-			for (var layerName in vectorTile.layers) {
-				this._dataLayerNames[layerName] = true;
-				var layer = vectorTile.layers[layerName];
+        vectorTilePromise.then( function renderTile(vectorTile) {
+            for (var layerName in vectorTile.layers) {
+                this._dataLayerNames[layerName] = true;
+                var layer = vectorTile.layers[layerName];
 
-				var pxPerExtent = this.getTileSize().divideBy(layer.extent);
+                var pxPerExtent = this.getTileSize().divideBy(layer.extent);
 
-				var layerStyle = this.options.vectorTileLayerStyles[ layerName ] ||
-				L.Path.prototype.options;
+                var layerStyle = this.options.vectorTileLayerStyles[ layerName ] ||
+                L.Path.prototype.options;
 
-				for (var i = 0; i < layer.features.length; i++) {
-					var feat = layer.features[i];
-					var id;
+                for (var i = 0; i < layer.features.length; i++) {
+                    var feat = layer.features[i];
+                    var id;
 
-					var styleOptions = layerStyle;
-					if (storeFeatures) {
-						id = this.options.getFeatureId(feat, coords);
-						var styleOverride = this._overriddenStyles[id];
-						if (styleOverride) {
-							if (styleOverride[layerName]) {
-								styleOptions = styleOverride[layerName];
-							} else {
-								styleOptions = styleOverride;
-							}
-						}
-					}
+                    var styleOptions = layerStyle;
+                    if (storeFeatures) {
+                        id = this.options.getFeatureId(feat, coords);
+                        var styleOverride = this._overriddenStyles[id];
+                        if (styleOverride) {
+                            if (styleOverride[layerName]) {
+                                styleOptions = styleOverride[layerName];
+                            } else {
+                                styleOptions = styleOverride;
+                            }
+                        }
+                    }
 
-					if (styleOptions instanceof Function) {
-						styleOptions = styleOptions(feat.properties, coords.z);
-					}
+                    if (styleOptions instanceof Function) {
+                        styleOptions = styleOptions(feat.properties, coords.z);
+                    }
 
-					if (!(styleOptions instanceof Array)) {
-						styleOptions = [styleOptions];
-					}
+                    if (!(styleOptions instanceof Array)) {
+                        styleOptions = [styleOptions];
+                    }
 
-					if (!styleOptions.length) {
-						continue;
-					}
+                    if (!styleOptions.length) {
+                        continue;
+                    }
 
-					var featureLayer = this._createLayer(feat, pxPerExtent);
+                    var featureLayer = this._createLayer(feat, pxPerExtent);
 
-					for (var j = 0; j < styleOptions.length; j++) {
-						var style = L.extend({}, L.Path.prototype.options, styleOptions[j]);
-						featureLayer.render(renderer, style);
-						renderer._addPath(featureLayer);
-					}
+                    for (var j = 0; j < styleOptions.length; j++) {
+                        var style = L.extend({}, L.Path.prototype.options, styleOptions[j]);
+                        featureLayer.render(renderer, style);
+                        renderer._addPath(featureLayer);
+                    }
 
-					if (this.options.interactive) {
-						featureLayer.makeInteractive();
-					}
+                    if (this.options.interactive) {
+                        featureLayer.makeInteractive();
+                    }
 
-					if (storeFeatures) {
-						renderer._features[id] = {
-							layerName: layerName,
-							feature: featureLayer
-						};
-					}
-				}
+                    if (storeFeatures) {
+                        renderer._features[id] = {
+                            layerName: layerName,
+                            feature: featureLayer
+                        };
+                    }
+                }
 
-			}
-			if (this._map != null) {
-				renderer.addTo(this._map);
-			}
-			L.Util.requestAnimFrame(done.bind(coords, null, null));
-		}.bind(this));
+            }
+            if (this._map != null) {
+                renderer.addTo(this._map);
+            }
+            L.Util.requestAnimFrame(done.bind(coords, null, null));
+        }.bind(this));
 
-		return renderer.getContainer();
-	},
+        return renderer.getContainer();
+    },
 
-	// 🍂method setFeatureStyle(id: Number, layerStyle: L.Path Options): this
-	// Given the unique ID for a vector features (as per the `getFeatureId` option),
-	// re-symbolizes that feature across all tiles it appears in.
-	setFeatureStyle: function(id, layerStyle) {
-		this._overriddenStyles[id] = layerStyle;
+    // 🍂method setFeatureStyle(id: Number, layerStyle: L.Path Options): this
+    // Given the unique ID for a vector features (as per the `getFeatureId` option),
+    // re-symbolizes that feature across all tiles it appears in.
+    setFeatureStyle: function(id, layerStyle) {
+        this._overriddenStyles[id] = layerStyle;
 
-		for (var tileKey in this._vectorTiles) {
-			var tile = this._vectorTiles[tileKey];
-			var features = tile._features;
-			var data = features[id];
-			if (data) {
-				var feat = data.feature;
+        for (var tileKey in this._vectorTiles) {
+            var tile = this._vectorTiles[tileKey];
+            var features = tile._features;
+            var data = features[id];
+            if (data) {
+                var feat = data.feature;
 
-				var styleOptions = layerStyle;
-				if (layerStyle[data.layerName]) {
-					styleOptions = layerStyle[data.layerName];
-				}
+                var styleOptions = layerStyle;
+                if (layerStyle[data.layerName]) {
+                    styleOptions = layerStyle[data.layerName];
+                }
 
-				this._updateStyles(feat, tile, styleOptions);
-			}
-		}
-		return this;
-	},
+                this._updateStyles(feat, tile, styleOptions);
+            }
+        }
+        return this;
+    },
 
-	// 🍂method setFeatureStyle(id: Number): this
-	// Reverts the effects of a previous `setFeatureStyle` call.
-	resetFeatureStyle: function(id) {
-		delete this._overriddenStyles[id];
+    // 🍂method setFeatureStyle(id: Number): this
+    // Reverts the effects of a previous `setFeatureStyle` call.
+    resetFeatureStyle: function(id) {
+        delete this._overriddenStyles[id];
 
-		for (var tileKey in this._vectorTiles) {
-			var tile = this._vectorTiles[tileKey];
-			var features = tile._features;
-			var data = features[id];
-			if (data) {
-				var feat = data.feature;
-				var styleOptions = this.options.vectorTileLayerStyles[ data.layerName ] ||
-				L.Path.prototype.options;
-				this._updateStyles(feat, tile, styleOptions);
-			}
-		}
-		return this;
-	},
+        for (var tileKey in this._vectorTiles) {
+            var tile = this._vectorTiles[tileKey];
+            var features = tile._features;
+            var data = features[id];
+            if (data) {
+                var feat = data.feature;
+                var styleOptions = this.options.vectorTileLayerStyles[ data.layerName ] ||
+                L.Path.prototype.options;
+                this._updateStyles(feat, tile, styleOptions);
+            }
+        }
+        return this;
+    },
 
-	// 🍂method getDataLayerNames(): Array
-	// Returns an array of strings, with all the known names of data layers in
-	// the vector tiles displayed. Useful for introspection.
-	getDataLayerNames: function() {
-		return Object.keys(this._dataLayerNames);
-	},
+    // 🍂method getDataLayerNames(): Array
+    // Returns an array of strings, with all the known names of data layers in
+    // the vector tiles displayed. Useful for introspection.
+    getDataLayerNames: function() {
+        return Object.keys(this._dataLayerNames);
+    },
 
-	_updateStyles: function(feat, renderer, styleOptions) {
-		styleOptions = (styleOptions instanceof Function) ?
-			styleOptions(feat.properties, renderer.getCoord().z) :
-			styleOptions;
+    _updateStyles: function(feat, renderer, styleOptions) {
+        styleOptions = (styleOptions instanceof Function) ?
+            styleOptions(feat.properties, renderer.getCoord().z) :
+            styleOptions;
 
-		if (!(styleOptions instanceof Array)) {
-			styleOptions = [styleOptions];
-		}
+        if (!(styleOptions instanceof Array)) {
+            styleOptions = [styleOptions];
+        }
 
-		for (var j = 0; j < styleOptions.length; j++) {
-			var style = L.extend({}, L.Path.prototype.options, styleOptions[j]);
-			feat.updateStyle(renderer, style);
-		}
-	},
+        for (var j = 0; j < styleOptions.length; j++) {
+            var style = L.extend({}, L.Path.prototype.options, styleOptions[j]);
+            feat.updateStyle(renderer, style);
+        }
+    },
 
-	_createLayer: function(feat, pxPerExtent, layerStyle) {
-		var layer;
-		switch (feat.type) {
-		case 1:
-			layer = new PointSymbolizer(feat, pxPerExtent);
-			break;
-		case 2:
-			layer = new LineSymbolizer(feat, pxPerExtent);
-			break;
-		case 3:
-			layer = new FillSymbolizer(feat, pxPerExtent);
-			break;
-		}
+    _createLayer: function(feat, pxPerExtent, layerStyle) {
+        var layer;
+        switch (feat.type) {
+        case 1:
+            layer = new PointSymbolizer(feat, pxPerExtent);
+            break;
+        case 2:
+            layer = new LineSymbolizer(feat, pxPerExtent);
+            break;
+        case 3:
+            layer = new FillSymbolizer(feat, pxPerExtent);
+            break;
+        }
 
-		if (this.options.interactive) {
-			layer.addEventParent(this);
-		}
+        if (this.options.interactive) {
+            layer.addEventParent(this);
+        }
 
-		return layer;
-	},
+        return layer;
+    },
 });
 
 /*
@@ -531,93 +537,93 @@ L.vectorGrid = function (options) {
 };
 
 var read = function (buffer, offset, isLE, mLen, nBytes) {
-  var e, m;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var nBits = -7;
-  var i = isLE ? (nBytes - 1) : 0;
-  var d = isLE ? -1 : 1;
-  var s = buffer[offset + i];
+    var e, m;
+    var eLen = nBytes * 8 - mLen - 1;
+    var eMax = (1 << eLen) - 1;
+    var eBias = eMax >> 1;
+    var nBits = -7;
+    var i = isLE ? (nBytes - 1) : 0;
+    var d = isLE ? -1 : 1;
+    var s = buffer[offset + i];
 
-  i += d;
+    i += d;
 
-  e = s & ((1 << (-nBits)) - 1);
-  s >>= (-nBits);
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+    e = s & ((1 << (-nBits)) - 1);
+    s >>= (-nBits);
+    nBits += eLen;
+    for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
 
-  m = e & ((1 << (-nBits)) - 1);
-  e >>= (-nBits);
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+    m = e & ((1 << (-nBits)) - 1);
+    e >>= (-nBits);
+    nBits += mLen;
+    for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
 
-  if (e === 0) {
-    e = 1 - eBias;
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+    if (e === 0) {
+        e = 1 - eBias;
+    } else if (e === eMax) {
+        return m ? NaN : ((s ? -1 : 1) * Infinity)
+    } else {
+        m = m + Math.pow(2, mLen);
+        e = e - eBias;
+    }
+    return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
 };
 
 var write = function (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c;
-  var eLen = nBytes * 8 - mLen - 1;
-  var eMax = (1 << eLen) - 1;
-  var eBias = eMax >> 1;
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0);
-  var i = isLE ? 0 : (nBytes - 1);
-  var d = isLE ? 1 : -1;
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
+    var e, m, c;
+    var eLen = nBytes * 8 - mLen - 1;
+    var eMax = (1 << eLen) - 1;
+    var eBias = eMax >> 1;
+    var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0);
+    var i = isLE ? 0 : (nBytes - 1);
+    var d = isLE ? 1 : -1;
+    var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
 
-  value = Math.abs(value);
+    value = Math.abs(value);
 
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
-    }
-    if (e + eBias >= 1) {
-      value += rt / c;
+    if (isNaN(value) || value === Infinity) {
+        m = isNaN(value) ? 1 : 0;
+        e = eMax;
     } else {
-      value += rt * Math.pow(2, 1 - eBias);
+        e = Math.floor(Math.log(value) / Math.LN2);
+        if (value * (c = Math.pow(2, -e)) < 1) {
+            e--;
+            c *= 2;
+        }
+        if (e + eBias >= 1) {
+            value += rt / c;
+        } else {
+            value += rt * Math.pow(2, 1 - eBias);
+        }
+        if (value * c >= 2) {
+            e++;
+            c /= 2;
+        }
+
+        if (e + eBias >= eMax) {
+            m = 0;
+            e = eMax;
+        } else if (e + eBias >= 1) {
+            m = (value * c - 1) * Math.pow(2, mLen);
+            e = e + eBias;
+        } else {
+            m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
+            e = 0;
+        }
     }
-    if (value * c >= 2) {
-      e++;
-      c /= 2;
-    }
 
-    if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
-    }
-  }
+    for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
 
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+    e = (e << mLen) | m;
+    eLen += mLen;
+    for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
 
-  e = (e << mLen) | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128;
+    buffer[offset + i - d] |= s * 128;
 };
 
 var index$1 = {
-	read: read,
-	write: write
+    read: read,
+    write: write
 };
 
 var index = Pbf;
