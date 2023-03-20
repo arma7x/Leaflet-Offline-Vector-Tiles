@@ -8,7 +8,7 @@ A [LeafletJS](http://www.leafletjs.com) plugin to load tilesets in [`.mbtiles` f
 - [Leaflet@1.8.0](https://github.com/Leaflet/Leaflet/)
 - [Sql.js](https://github.com/sql-js/sql.js/)
 - [Leaflet.VectorGrid](https://github.com/Leaflet/Leaflet.VectorGrid)
-- [pako,js](https://github.com/nodeca/pako)
+- [pako.js](https://github.com/nodeca/pako)
 
 #### Code to extract pbf from mbtile database file:
 - https://github.com/arma7x/Leaflet-Offline-Vector-Tiles/blob/master/Leaflet.VectorGrid.js#L1769-L1812
