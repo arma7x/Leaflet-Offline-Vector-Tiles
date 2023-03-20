@@ -525,7 +525,7 @@ L.VectorGrid = L.GridLayer.extend({
  */
 
 L.vectorGrid = function (options) {
-	return new L.VectorGrid(options);
+    return new L.VectorGrid(options);
 };
 
 var read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -1744,117 +1744,117 @@ var VectorTile = vectortile;
  */
 L.VectorGrid.Protobuf = L.VectorGrid.extend({
 
-	options: {
-		// 🍂section
-		// As with `L.TileLayer`, the URL template might contain a reference to
-		// any option (see the example above and note the `{key}` or `token` in the URL
-		// template, and the corresponding option).
-		//
-		// 🍂option subdomains: String = 'abc'
-		// Akin to the `subdomains` option for `L.TileLayer`.
-		subdomains: 'abc',	// Like L.TileLayer
-		//
-		// 🍂option fetchOptions: Object = {}
-		// options passed to `fetch`, e.g. {credentials: 'same-origin'} to send cookie for the current domain
-		fetchOptions: {}
-	},
+    options: {
+        // 🍂section
+        // As with `L.TileLayer`, the URL template might contain a reference to
+        // any option (see the example above and note the `{key}` or `token` in the URL
+        // template, and the corresponding option).
+        //
+        // 🍂option subdomains: String = 'abc'
+        // Akin to the `subdomains` option for `L.TileLayer`.
+        subdomains: 'abc',	// Like L.TileLayer
+        //
+        // 🍂option fetchOptions: Object = {}
+        // options passed to `fetch`, e.g. {credentials: 'same-origin'} to send cookie for the current domain
+        fetchOptions: {}
+    },
 
-	initialize: function(buffer, options) {
-		// Inherits options from geojson-vt!
-// 		this._slicer = geojsonvt(geojson, options);
-		this._openDB(buffer);
-		L.VectorGrid.prototype.initialize.call(this, options);
-	},
+    initialize: function(buffer, options) {
+        // Inherits options from geojson-vt!
+        // this._slicer = geojsonvt(geojson, options);
+        this._openDB(buffer);
+        L.VectorGrid.prototype.initialize.call(this, options);
+    },
 
-	_openDB: function(buffer) {
-		/// This assumes the `SQL` global variable to exist!!
-		initSqlJs()
-		.then((SQL) => {
-			this._db = new SQL.Database( new Uint8Array(buffer) );
-			this._stmt = this._db.prepare('SELECT tile_data FROM tiles WHERE zoom_level = :z AND tile_column = :x AND tile_row = :y');
+    _openDB: function(buffer) {
+        /// This assumes the `SQL` global variable to exist!!
+        initSqlJs()
+        .then((SQL) => {
+            this._db = new SQL.Database( new Uint8Array(buffer) );
+            this._stmt = this._db.prepare('SELECT tile_data FROM tiles WHERE zoom_level = :z AND tile_column = :x AND tile_row = :y');
 
-			// Load some metadata (or at least try to)
-			var metaStmt = this._db.prepare('SELECT value FROM metadata WHERE name = :key');
-			var row;
+            // Load some metadata (or at least try to)
+            var metaStmt = this._db.prepare('SELECT value FROM metadata WHERE name = :key');
+            var row;
 
-			row = metaStmt.getAsObject({':key': 'attribution'});
-			if (row.value) { this.options.attribution = row.value; }
+            row = metaStmt.getAsObject({':key': 'attribution'});
+            if (row.value) { this.options.attribution = row.value; }
 
-			row = metaStmt.getAsObject({':key': 'minzoom'});
-			if (row.value) { this.options.minZoom = Number(row.value); }
+            row = metaStmt.getAsObject({':key': 'minzoom'});
+            if (row.value) { this.options.minZoom = Number(row.value); }
 
-			row = metaStmt.getAsObject({':key': 'maxzoom'});
-			if (row.value) { this.options.maxZoom = Number(row.value); }
+            row = metaStmt.getAsObject({':key': 'maxzoom'});
+            if (row.value) { this.options.maxZoom = Number(row.value); }
 
-			row = metaStmt.getAsObject({':key': 'format'});
-			if (row.value && row.value === 'png') {
-				this._format = 'image/png'
-			} else if (row.value && row.value === 'jpg') {
-				this._format = 'image/jpg'
-			} else if (row.value && row.value === 'pbf') {
-				this._format = 'application/x-protobuf'
-			} else {
-				// Fall back to PNG, hope it works.
-				this._format = 'image/png'
-			}
+            row = metaStmt.getAsObject({':key': 'format'});
+            if (row.value && row.value === 'png') {
+                this._format = 'image/png'
+            } else if (row.value && row.value === 'jpg') {
+                this._format = 'image/jpg'
+            } else if (row.value && row.value === 'pbf') {
+                this._format = 'application/x-protobuf'
+            } else {
+                // Fall back to PNG, hope it works.
+                this._format = 'image/png'
+            }
 
-			// 🍂event databaseloaded
-			// Fired when the database has been loaded, parsed, and ready for queries
-			this.fire('databaseloaded');
-			this._databaseIsLoaded = true;
-		})
-		.catch((ex) => {
-			// 🍂event databaseloaded
-			// Fired when the database could not load for any reason. Might contain
-			// an `error` property describing the error.
-			this.fire('databaseerror', {error: ex});
-		});
-	},
+            // 🍂event databaseloaded
+            // Fired when the database has been loaded, parsed, and ready for queries
+            this.fire('databaseloaded');
+            this._databaseIsLoaded = true;
+        })
+        .catch((ex) => {
+            // 🍂event databaseloaded
+            // Fired when the database could not load for any reason. Might contain
+            // an `error` property describing the error.
+            this.fire('databaseerror', {error: ex});
+        });
+    },
 
-	_getSubdomain: L.TileLayer.prototype._getSubdomain,
+    _getSubdomain: L.TileLayer.prototype._getSubdomain,
 
-	_getVectorTilePromise: function(coords) {
-		const _this = this;
-		if (this._databaseIsLoaded) {
-			var row = this._stmt.getAsObject({
-				':x': coords.x,
-				':y': this._globalTileRange.max.y - coords.y,
-				':z': coords.z
-			});
+    _getVectorTilePromise: function(coords) {
+        const _this = this;
+        if (this._databaseIsLoaded) {
+            var row = this._stmt.getAsObject({
+                ':x': coords.x,
+                ':y': this._globalTileRange.max.y - coords.y,
+                ':z': coords.z
+            });
 
-			if ('tile_data' in row && row.tile_data != null) {
-				const inflated = pako.inflate(row.tile_data);
-				const reader = new FileReader();
-				const result = new Promise(function (resolve) {
-					reader.addEventListener("loadend", () => {
-						var pbf = new Pbf(reader.result);
-						var json = new VectorTile(pbf);
-						for (var layerName in json.layers) {
-							var feats = [];
-							for (var i=0; i<json.layers[layerName].length; i++) {
-								var feat = json.layers[layerName].feature(i);
-								feat.geometry = feat.loadGeometry();
-								feats.push(feat);
-							}
-							json.layers[layerName].features = feats;
-						}
-						resolve(json);
-					});
-					reader.readAsArrayBuffer(new Blob([inflated] , {type: _this._format}));
-				});
-				return result;
-			}
-		}
+            if ('tile_data' in row && row.tile_data != null) {
+                const inflated = pako.inflate(row.tile_data);
+                const reader = new FileReader();
+                const result = new Promise(function (resolve) {
+                    reader.addEventListener("loadend", () => {
+                        var pbf = new Pbf(reader.result);
+                        var json = new VectorTile(pbf);
+                        for (var layerName in json.layers) {
+                            var feats = [];
+                            for (var i=0; i<json.layers[layerName].length; i++) {
+                                var feat = json.layers[layerName].feature(i);
+                                feat.geometry = feat.loadGeometry();
+                                feats.push(feat);
+                            }
+                            json.layers[layerName].features = feats;
+                        }
+                        resolve(json);
+                    });
+                    reader.readAsArrayBuffer(new Blob([inflated] , {type: _this._format}));
+                });
+                return result;
+            }
+        }
 
-		return Promise.reject("No Tiles");
-	}
+        return Promise.reject("No Tiles");
+    }
 });
 
 
 // 🍂factory L.vectorGrid.protobuf(url: String, options)
 // Instantiates a new protobuf VectorGrid with the given URL template and options
 L.vectorGrid.protobuf = function (url, options) {
-	return new L.VectorGrid.Protobuf(url, options);
+    return new L.VectorGrid.Protobuf(url, options);
 };
 
 // The geojson/topojson is sliced into tiles via a web worker.
@@ -1897,168 +1897,167 @@ L.vectorGrid.protobuf = function (url, options) {
 
 L.VectorGrid.Slicer = L.VectorGrid.extend({
 
-	options: {
-		// 🍂section
-		// Additionally to these options, `VectorGrid.Slicer` can take in any
-		// of the [`geojson-vt` options](https://github.com/mapbox/geojson-vt#options).
+    options: {
+        // 🍂section
+        // Additionally to these options, `VectorGrid.Slicer` can take in any
+        // of the [`geojson-vt` options](https://github.com/mapbox/geojson-vt#options).
 
-		// 🍂option vectorTileLayerName: String = 'sliced'
-		// Vector tiles contain a set of *data layers*, and those data layers
-		// contain features. Thus, the slicer creates one data layer, with
-		// the name given in this option. This is important for symbolizing the data.
-		vectorTileLayerName: 'sliced',
+        // 🍂option vectorTileLayerName: String = 'sliced'
+        // Vector tiles contain a set of *data layers*, and those data layers
+        // contain features. Thus, the slicer creates one data layer, with
+        // the name given in this option. This is important for symbolizing the data.
+        vectorTileLayerName: 'sliced',
 
-		extent: 4096,	// Default for geojson-vt
-		maxZoom: 14  	// Default for geojson-vt
-	},
+        extent: 4096,	// Default for geojson-vt
+        maxZoom: 14  	// Default for geojson-vt
+    },
 
-	initialize: function(geojson, options) {
-		L.VectorGrid.prototype.initialize.call(this, options);
+    initialize: function(geojson, options) {
+        L.VectorGrid.prototype.initialize.call(this, options);
 
-		// Create a shallow copy of this.options, excluding things that might
-		// be functions - we only care about topojson/geojsonvt options
-		var options = {};
-		for (var i in this.options) {
-			if (i !== 'rendererFactory' &&
-				i !== 'vectorTileLayerStyles' &&
-				typeof (this.options[i]) !== 'function'
-			) {
-				options[i] = this.options[i];
-			}
-		}
+        // Create a shallow copy of this.options, excluding things that might
+        // be functions - we only care about topojson/geojsonvt options
+        var options = {};
+        for (var i in this.options) {
+            if (i !== 'rendererFactory' &&
+                i !== 'vectorTileLayerStyles' &&
+                typeof (this.options[i]) !== 'function'
+            ) {
+                options[i] = this.options[i];
+            }
+        }
 
-// 		this._worker = new Worker(window.URL.createObjectURL(new Blob([workerCode])));
-		this._worker = new Worker('/L.VectorGrid.Slicer.Worker.js');
+        this._worker = new Worker('/L.VectorGrid.Slicer.Worker.js');
 
-		// Send initial data to worker.
-		this._worker.postMessage(['slice', geojson, options]);
+        // Send initial data to worker.
+        this._worker.postMessage(['slice', geojson, options]);
 
-	},
-
-
-	_getVectorTilePromise: function(coords) {
-
-		var _this = this;
-
-		var p = new Promise( function waitForWorker(res) {
-			_this._worker.addEventListener('message', function recv(m) {
-				if (m.data.coords &&
-				    m.data.coords.x === coords.x &&
-				    m.data.coords.y === coords.y &&
-				    m.data.coords.z === coords.z ) {
-
-					res(m.data);
-					_this._worker.removeEventListener('message', recv);
-				}
-			});
-		});
-
-		this._worker.postMessage(['get', coords]);
-
-		return p;
-	},
-
-});
+    },
 
 
-L.vectorGrid.slicer = function (geojson, options) {
-	return new L.VectorGrid.Slicer(geojson, options);
-};
+    _getVectorTilePromise: function(coords) {
 
-L.Canvas.Tile = L.Canvas.extend({
+        var _this = this;
 
-	initialize: function (tileCoord, tileSize, options) {
-		L.Canvas.prototype.initialize.call(this, options);
-		this._tileCoord = tileCoord;
-		this._size = tileSize;
+        var p = new Promise( function waitForWorker(res) {
+            _this._worker.addEventListener('message', function recv(m) {
+                if (m.data.coords &&
+                    m.data.coords.x === coords.x &&
+                    m.data.coords.y === coords.y &&
+                    m.data.coords.z === coords.z ) {
 
-		this._initContainer();
-		this._container.setAttribute('width', this._size.x);
-		this._container.setAttribute('height', this._size.y);
-		this._layers = {};
-		this._drawnLayers = {};
-		this._drawing = true;
+                    res(m.data);
+                    _this._worker.removeEventListener('message', recv);
+                }
+            });
+        });
 
-		if (options.interactive) {
-			// By default, Leaflet tiles do not have pointer events
-			this._container.style.pointerEvents = 'auto';
-		}
-	},
+        this._worker.postMessage(['get', coords]);
 
-	getCoord: function() {
-		return this._tileCoord;
-	},
+        return p;
+    },
 
-	getContainer: function() {
-		return this._container;
-	},
+    });
 
-	getOffset: function() {
-		return this._tileCoord.scaleBy(this._size).subtract(this._map.getPixelOrigin());
-	},
 
-	onAdd: L.Util.falseFn,
+    L.vectorGrid.slicer = function (geojson, options) {
+        return new L.VectorGrid.Slicer(geojson, options);
+    };
 
-	addTo: function(map) {
-		this._map = map;
-	},
+    L.Canvas.Tile = L.Canvas.extend({
 
-	removeFrom: function (map) {
-		delete this._map;
-	},
+    initialize: function (tileCoord, tileSize, options) {
+        L.Canvas.prototype.initialize.call(this, options);
+        this._tileCoord = tileCoord;
+        this._size = tileSize;
 
-	_onClick: function (e) {
-		var point = this._map.mouseEventToLayerPoint(e).subtract(this.getOffset()), layer, clickedLayer;
+        this._initContainer();
+        this._container.setAttribute('width', this._size.x);
+        this._container.setAttribute('height', this._size.y);
+        this._layers = {};
+        this._drawnLayers = {};
+        this._drawing = true;
 
-		for (var id in this._layers) {
-			layer = this._layers[id];
-			if (layer.options.interactive && layer._containsPoint(point) && !this._map._draggableMoved(layer)) {
-				clickedLayer = layer;
-			}
-		}
-		if (clickedLayer)  {
-			L.DomEvent.fakeStop(e);
-			this._fireEvent([clickedLayer], e);
-		}
-	},
+        if (options.interactive) {
+            // By default, Leaflet tiles do not have pointer events
+            this._container.style.pointerEvents = 'auto';
+        }
+    },
 
-	_onMouseMove: function (e) {
-		if (!this._map || this._map.dragging.moving() || this._map._animatingZoom) { return; }
+    getCoord: function() {
+        return this._tileCoord;
+    },
 
-		var point = this._map.mouseEventToLayerPoint(e).subtract(this.getOffset());
-		this._handleMouseHover(e, point);
-	},
+    getContainer: function() {
+        return this._container;
+    },
 
-	/// TODO: Modify _initPath to include an extra parameter, a group name
-	/// to order symbolizers by z-index
+    getOffset: function() {
+        return this._tileCoord.scaleBy(this._size).subtract(this._map.getPixelOrigin());
+    },
 
-	_updateIcon: function (layer) {
-		if (!this._drawing) { return; }
+    onAdd: L.Util.falseFn,
 
-		var icon = layer.options.icon,
-		    options = icon.options,
-		    size = L.point(options.iconSize),
-		    anchor = options.iconAnchor ||
-		        	 size && size.divideBy(2, true),
-		    p = layer._point.subtract(anchor),
-		    ctx = this._ctx,
-		    img = layer._getImage();
+    addTo: function(map) {
+        this._map = map;
+    },
 
-		if (img.complete) {
-			ctx.drawImage(img, p.x, p.y, size.x, size.y);
-		} else {
-			L.DomEvent.on(img, 'load', function() {
-				ctx.drawImage(img, p.x, p.y, size.x, size.y);
-			});
-		}
+    removeFrom: function (map) {
+        delete this._map;
+    },
 
-		this._drawnLayers[layer._leaflet_id] = layer;
-	}
+    _onClick: function (e) {
+        var point = this._map.mouseEventToLayerPoint(e).subtract(this.getOffset()), layer, clickedLayer;
+
+        for (var id in this._layers) {
+            layer = this._layers[id];
+            if (layer.options.interactive && layer._containsPoint(point) && !this._map._draggableMoved(layer)) {
+                clickedLayer = layer;
+            }
+        }
+        if (clickedLayer)  {
+            L.DomEvent.fakeStop(e);
+            this._fireEvent([clickedLayer], e);
+        }
+    },
+
+    _onMouseMove: function (e) {
+        if (!this._map || this._map.dragging.moving() || this._map._animatingZoom) { return; }
+
+        var point = this._map.mouseEventToLayerPoint(e).subtract(this.getOffset());
+        this._handleMouseHover(e, point);
+    },
+
+    // TODO: Modify _initPath to include an extra parameter, a group name
+    // to order symbolizers by z-index
+
+    _updateIcon: function (layer) {
+        if (!this._drawing) { return; }
+
+        var icon = layer.options.icon,
+            options = icon.options,
+            size = L.point(options.iconSize),
+            anchor = options.iconAnchor ||
+                     size && size.divideBy(2, true),
+            p = layer._point.subtract(anchor),
+            ctx = this._ctx,
+            img = layer._getImage();
+
+        if (img.complete) {
+            ctx.drawImage(img, p.x, p.y, size.x, size.y);
+        } else {
+            L.DomEvent.on(img, 'load', function() {
+                ctx.drawImage(img, p.x, p.y, size.x, size.y);
+            });
+        }
+
+        this._drawnLayers[layer._leaflet_id] = layer;
+    }
 });
 
 
 L.canvas.tile = function(tileCoord, tileSize, opts){
-	return new L.Canvas.Tile(tileCoord, tileSize, opts);
+    return new L.Canvas.Tile(tileCoord, tileSize, opts);
 };
 
 // Aux file to bundle everything together
