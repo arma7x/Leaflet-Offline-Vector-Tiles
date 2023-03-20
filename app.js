@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const openmaptilesVectorTileOptions = {
 		getFeatureId: function (e, coords) {
 			// console.log(e.properties.class, e.properties.name);
-			if (e.properties.name && ['city', 'town', 'village', 'railway', 'suburb', 'toll_booth', 'police', 'neighbourhood', 'lake'].indexOf(e.properties.class) > -1) {
+			if (e.properties.name && ['city', 'town', 'village', 'railway', 'suburb', 'neighbourhood', 'lake'].indexOf(e.properties.class) > -1) {
 				const coordinates = e.toGeoJSON(coords.x, coords.y, coords.z).geometry.coordinates;
 				let latLng = {};
 				if (typeof coordinates[0] === 'object') {
