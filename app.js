@@ -164,6 +164,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		let dict = {};
 		console.log(dict);
 		return (string) => {
+			if (['motorway'].indexOf(string) > -1) {
+				dict[string] = '#E892A2';
+				return dict[string];
+			}
+			if (['trunk'].indexOf(string) > -1) {
+				dict[string] = '#F9B29C';
+				return dict[string];
+			}
+			if (['primary'].indexOf(string) > -1) {
+				dict[string] = '#FCD6A4';
+				return dict[string];
+			}
+			if (['secondary'].indexOf(string) > -1) {
+				dict[string] = '#FBFFA7';
+				return dict[string];
+			}
 			if (['rail'].indexOf(string) > -1) {
 				dict[string] = '#000000';
 				return dict[string];
