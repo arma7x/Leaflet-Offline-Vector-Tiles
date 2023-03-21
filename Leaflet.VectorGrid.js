@@ -1774,19 +1774,19 @@ L.VectorGrid.Protobuf = L.VectorGrid.extend({
             this._stmt = this._db.prepare('SELECT tile_data FROM tiles WHERE zoom_level = :z AND tile_column = :x AND tile_row = :y');
 
             // Load some metadata (or at least try to)
-            var metaStmt = this._db.prepare('SELECT value FROM metadata WHERE name = :key');
+            this._meta_stmt = this._db.prepare('SELECT value FROM metadata WHERE name = :key');
             var row;
 
-            row = metaStmt.getAsObject({':key': 'attribution'});
+            row = this._meta_stmt.getAsObject({':key': 'attribution'});
             if (row.value) { this.options.attribution = row.value; }
 
-            row = metaStmt.getAsObject({':key': 'minzoom'});
+            row = this._meta_stmt.getAsObject({':key': 'minzoom'});
             if (row.value) { this.options.minZoom = Number(row.value); }
 
-            row = metaStmt.getAsObject({':key': 'maxzoom'});
+            row = this._meta_stmt.getAsObject({':key': 'maxzoom'});
             if (row.value) { this.options.maxZoom = Number(row.value); }
 
-            row = metaStmt.getAsObject({':key': 'format'});
+            row = this._meta_stmt.getAsObject({':key': 'format'});
             if (row.value && row.value === 'png') {
                 this._format = 'image/png'
             } else if (row.value && row.value === 'jpg') {

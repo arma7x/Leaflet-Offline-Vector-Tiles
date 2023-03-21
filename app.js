@@ -55,12 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			opacity: 0.4
 		},
 		park: {
-			fill: true,
-			weight: 1,
-			fillColor: '#236C06',
-			color: '#236C06',
-			fillOpacity: 0.2,
-			opacity: 0.4
+			color: 'transparent',
 		},
 		boundary: {
 			color: 'transparent',
@@ -162,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function colorGenerator() {
 		let dict = {};
-		console.log(dict);
 		return (string) => {
 			if (['motorway'].indexOf(string) > -1) {
 				dict[string] = '#E892A2';
@@ -277,7 +271,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		offlineLayer.on('databaseloaded', (ev) => {
 			setTimeout(() => {
-				map.setView(new L.LatLng(3.1641, 101.6883), 14);
+				let center = offlineLayer._meta_stmt.getAsObject({':key': 'center'});
+				if (center != null) {
+					center = center.value.split(',');
+					map.setView(new L.LatLng(parseFloat(center[1]), parseFloat(center[0])), 7);
+				}
 				document.getElementsByClassName('leaflet-control-layers-selector')[0].click();
 			}, 500);
 		});
